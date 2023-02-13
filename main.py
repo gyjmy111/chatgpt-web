@@ -1,5 +1,7 @@
 import openai
 from flask import Flask, request, render_template, redirect
+import logging
+from datetime import datetime
 
 server = Flask(__name__)
 
@@ -23,6 +25,7 @@ def get_completion(question):
 
 @server.route('/chat', methods=['GET', 'POST'])
 def get_request_json():
+    
     if request.method == 'POST':
         if len(request.form['question']) < 1:
             return render_template(
@@ -33,9 +36,19 @@ def get_request_json():
         res = get_completion(question)
         print("问题：\n", question)
         print("答案：\n", res)
+        time_now = get_time()
+        logging.info(f"{time_now}|{question}|{res}")
 
         return render_template('chat.html', question=question, res=str(res))
     return render_template('chat.html', question=0)
+
+
+def get_time():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+
+logging.basicConfig(filename = './record.log',level=logging.INFO)
+
 
 if __name__ == '__main__':
     server.run(debug=True, host='0.0.0.0', port=80)
